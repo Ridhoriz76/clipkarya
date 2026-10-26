@@ -1,0 +1,20 @@
+# Local development helpers. Supabase itself runs via `supabase start` (Supabase CLI)
+# or a hosted project; see README.
+services:
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory-policy", "noeviction"]
+    volumes: [redis-data:/data]
+
+  # Optional: run the worker in Docker instead of `pnpm dev:worker`.
+  worker:
+    profiles: ["worker"]
+    build: { context: ., dockerfile: apps/worker/Dockerfile }
+    env_file: apps/worker/.env
+    environment:
+      REDIS_URL: redis://redis:6379
+    depends_on: [redis]
+
+volumes:
+  redis-data:
